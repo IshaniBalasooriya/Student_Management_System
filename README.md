@@ -7,4 +7,4 @@ Requirements:
         *pyhton3 need to be installed
 
 How to run:
-         #python3.7 student_manage.py
+         #python3.7 Student_Management_System.py
