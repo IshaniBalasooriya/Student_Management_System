@@ -1,125 +1,169 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-import sqlite3
+from tkinter import *
+import sqlite3,sys
 
-root = tk.Tk()
-root.title("Management")
+def connection():
+    try:
+        conn=sqlite3.connect("student.db")
+    except:
+        print("cannot connect to the database")
+    return conn   
 
-connection = sqlite3.connect('management.db')
-
-TABLE_NAME = "management_table"
-STUDENT_ID = "student_id"
-STUDENT_NAME = "student_name"
-STUDENT_COLLEGE = "student_college"
-STUDENT_ADDRESS = "student_address"
-STUDENT_PHONE = "student_phone"
-
-connection.execute(" CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " ( " + STUDENT_ID +
-                   " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                   STUDENT_NAME + " TEXT, " + STUDENT_COLLEGE + " TEXT, " +
-                   STUDENT_ADDRESS + " TEXT, " + STUDENT_PHONE + " INTEGER);")
-
-appLabel = tk.Label(root, text="Student Management System", fg="#06a099", width=35)
-appLabel.config(font=("Sylfaen", 30))
-appLabel.grid(row=0, columnspan=2, padx=(10,10), pady=(30, 0))
-
-class Student:
-    studentName = ""
-    collegeName = ""
-    phoneNumber = 0
-    address = ""
-
-    def __init__(self, studentName, collegeName, phoneNumber, address):
-        self.studentName = studentName
-        self.collegeName = collegeName
-        self.phoneNumber = phoneNumber
-        self.address = address
-
-nameLabel = tk.Label(root, text="Enter your name", width=40, anchor='w',
-                     font=("Sylfaen", 12)).grid(row=1, column=0, padx=(10,0),
-                                                pady=(30, 0))
-collegeLabel = tk.Label(root, text="Enter your college", width=40, anchor='w',
-                        font=("Sylfaen", 12)).grid(row=2, column=0, padx=(10,0))
-phoneLabel = tk.Label(root, text="Enter your phone number", width=40, anchor='w',
-                      font=("Sylfaen", 12)).grid(row=3, column=0, padx=(10,0))
-addressLabel = tk.Label(root, text="Enter your address", width=40, anchor='w',
-                        font=("Sylfaen", 12)).grid(row=4, column=0, padx=(10,0))
-
-nameEntry = tk.Entry(root, width = 30)
-collegeEntry = tk.Entry(root, width = 30)
-phoneEntry = tk.Entry(root, width = 30)
-addressEntry = tk.Entry(root, width = 30)
-
-nameEntry.grid(row=1, column=1, padx=(0,10), pady=(30, 20))
-collegeEntry.grid(row=2, column=1, padx=(0,10), pady = 20)
-phoneEntry.grid(row=3, column=1, padx=(0,10), pady = 20)
-addressEntry.grid(row=4, column=1, padx=(0,10), pady = 20)
-
-def takeNameInput():
-    global nameEntry, collegeEntry, phoneEntry, addressEntry
-    # global username, collegeName, phone, address
-    global list
-    global TABLE_NAME, STUDENT_NAME, STUDENT_COLLEGE, STUDENT_ADDRESS, STUDENT_PHONE
-    username = nameEntry.get()
-    nameEntry.delete(0, tk.END)
-    collegeName = collegeEntry.get()
-    collegeEntry.delete(0, tk.END)
-    phone = int(phoneEntry.get())
-    phoneEntry.delete(0, tk.END)
-    address = addressEntry.get()
-    addressEntry.delete(0, tk.END)
-
-    connection.execute("INSERT INTO " + TABLE_NAME + " ( " + STUDENT_NAME + ", " +
-                       STUDENT_COLLEGE + ", " + STUDENT_ADDRESS + ", " +
-                       STUDENT_PHONE + " ) VALUES ( '"
-                       + username + "', '" + collegeName + "', '" +
-                       address + "', " + str(phone) + " ); ")
-    connection.commit()
-    messagebox.showinfo("Success", "Data Saved Successfully.")
+def verifier():
+    a=b=c=d=e=f=0
+    if not student_name.get():
+        t1.insert(END,"<>Student name is required<>\n")
+        a=1
+    if not roll_no.get():
+        t1.insert(END,"<>Roll no is required<>\n")
+        b=1
+    if not branch.get():
+        t1.insert(END,"<>Branch is required<>\n")
+        c=1
+    if not phone.get():
+        t1.insert(END,"<>Phone number is requrired<>\n")
+        d=1
+    if not father.get():
+        t1.insert(END,"<>Father name is required<>\n")
+        e=1
+    if not address.get():
+        t1.insert(END,"<>Address is Required<>\n")
+        f=1
+    if a==1 or b==1 or c==1 or d==1 or e==1 or f==1:
+        return 1
+    else:
+        return 0
 
 
-def destroyRootWindow():
-    root.destroy()
-    secondWindow = tk.Tk()
+def add_student():
+            ret=verifier()
+            if ret==0:
+                conn=connection()
+                cur=conn.cursor()
+                cur.execute("CREATE TABLE IF NOT EXISTS STUDENTS(NAME TEXT,ROLL_NO INTEGER,BRANCH TEXT,PHONE_NO INTEGER,FATHER TEXT,ADDRESS TEXT)")
+                cur.execute("insert into STUDENTS values(?,?,?,?,?,?)",(student_name.get(),int(roll_no.get()),branch.get(),int(phone.get()),father.get(),address.get()))
+                conn.commit()
+                conn.close()
+                t1.insert(END,"ADDED SUCCESSFULLY\n")
 
-    secondWindow.title("Display results")
 
-    appLabel = tk.Label(secondWindow, text="Student Management System",
-                        fg="#06a099", width=40)
+def view_student():
+    conn=connection()
+    cur=conn.cursor()
+    cur.execute("select * from STUDENTS")
+    data=cur.fetchall()
+    conn.close()
+    for i in data:
+        t1.insert(END,str(i)+"\n")
+
+
+def delete_student():
+    ret=verifier()
+    if r==0:
+        conn=connection()
+        cur=conn.cursor()
+        cur.execute("DELETE FROM STUDENTS WHERE ROLL_NO=?",(int(roll_no.get()),))
+        conn.commit()
+        conn.close()
+        t1.insert(END,"SUCCESSFULLY DELETED THE USER\n")
+
+def update_student():
+    ret=verifier()
+    if ret==0:
+        conn=connection()
+        cur=conn.cursor()
+        cur.execute("UPDATE STUDENTS SET NAME=?,ROLL_NO=?,BRANCH=?,PHONE_NO=?,FATHER=?,ADDRESS=? where ROLL_NO=?",(student_name.get(),int(roll_no.get()),branch.get(),int(phone.get()),father.get(),address.get(),int(roll_no.get())))
+        conn.commit()
+        conn.close()
+        t1.insert(END,"UPDATED SUCCESSFULLY\n")
+
+
+def close():
+    root.destroy() 
+
+def reset():
+    e1.delete(0, END)
+    e2.delete(0, END)
+    e3.delete(0, END)
+    e4.delete(0, END)
+    e5.delete(0, END)
+    e6.delete(0, END)
+    
+
+
+if __name__=="__main__":
+    root=Tk()
+    root.geometry("950x600+0+0")
+    root.title("Student Management System")
+    
+    appLabel = Label(root, text="Student Management System", fg="#06a099", width=35)
     appLabel.config(font=("Sylfaen", 30))
-    appLabel.pack()
+    appLabel.grid(row=0, columnspan=2, padx=(10,10), pady=(30, 0))
+     
+    student_name=StringVar()
+    roll_no=StringVar()
+    branch=StringVar()
+    phone=StringVar()
+    father=StringVar()
+    address=StringVar()
+    
+    label1=Label(root,text="Student name:")
+    label1.place(x=50,y=150)
 
-    tree = ttk.Treeview(secondWindow)
-    tree["columns"] = ("one", "two", "three", "four")
+    label2=Label(root,text="Roll no:")
+    label2.place(x=50,y=180)
 
-    tree.heading("one", text="Student Name")
-    tree.heading("two", text="College Name")
-    tree.heading("three", text="Address")
-    tree.heading("four", text="Phone Number")
+    label3=Label(root,text="Branch:")
+    label3.place(x=50,y=210)
 
-    cursor = connection.execute("SELECT * FROM " + TABLE_NAME + " ;")
-    i = 0
+    label4=Label(root,text="Phone Number:")
+    label4.place(x=50,y=240)
 
-    for row in cursor:
-        tree.insert('', i, text="Student " + str(row[0]),
-                    values=(row[1], row[2],
-                            row[3], row[4]))
-        i = i + 1
+    label5=Label(root,text="Father Name:")
+    label5.place(x=50,y=270)
 
-    tree.pack()
-    secondWindow.mainloop()
+    label6=Label(root,text="Address:")
+    label6.place(x=50,y=300)
+
+    e1=Entry(root,textvariable=student_name)
+    e1.place(x=150,y=150)
+
+    e2=Entry(root,textvariable=roll_no)
+    e2.place(x=150,y=180)
+
+    e3=Entry(root,textvariable=branch)
+    e3.place(x=150,y=210)
+
+    e4=Entry(root,textvariable=phone)
+    e4.place(x=150,y=240)
+    
+    e5=Entry(root,textvariable=father)
+    e5.place(x=150,y=270)
+
+    e6=Entry(root,textvariable=address)
+    e6.place(x=150,y=300)
+    
+    t1=Text(root,width=80,height=20)
+    t1.grid(row=10,column=1)
+   
 
 
-# def printDetails():
-#     for singleItem in list:
-#         print("Student name is: %s\nCollege name is: %s\nPhone number is: %d\nAddress is: %s" %
-#               (singleItem.studentName, singleItem.collegeName, singleItem.phoneNumber, singleItem.address))
-#         print("****************************************")
+    b1=Button(root,text="ADD STUDENT",command=add_student,width=40)
+    b1.grid(row=11,column=0)
 
-button = tk.Button(root, text="Take input", command=lambda :takeNameInput())
-button.grid(row=5, column=0, pady=30)
+    b2=Button(root,text="VIEW ALL STUDENTS",command=view_student,width=40)
+    b2.grid(row=12,column=0)
 
-displayButton = tk.Button(root, text="Display result", command=lambda :destroyRootWindow())
-displayButton.grid(row=5, column=1)
+    b3=Button(root,text="DELETE STUDENT",command=delete_student,width=40)
+    b3.grid(row=13,column=0)
 
-root.mainloop()
+    b4=Button(root,text="UPDATE INFO",command=update_student,width=40)
+    b4.grid(row=14,column=0)
+
+    b5=Button(root,text="CLOSE",command=close,width=40)
+    b5.grid(row=15,column=0)
+    
+    b6=Button(root,text="RESET",command=reset,width=40)
+    b6.grid(row=16,column=0)
+
+
+    root.mainloop()
